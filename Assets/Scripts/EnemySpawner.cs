@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,16 +7,16 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float spawnInterval = 2f;
     [SerializeField] private List<Transform> spawnPoints;
 
-    private void Start()
-    {
-        StartCoroutine(SpawnRoutine());
-    }
+    private float timer;
 
-    private IEnumerator SpawnRoutine()
+    private void Update()
     {
-        while (true)
+        if (!enabled) return;
+
+        timer += Time.deltaTime;
+        if (timer >= spawnInterval)
         {
-            yield return new WaitForSeconds(spawnInterval);
+            timer = 0f;
             SpawnEnemy();
         }
     }
