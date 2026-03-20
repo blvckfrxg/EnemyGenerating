@@ -1,40 +1,49 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public EnemyPool enemyPool;            // Ссылка на пул
-    public float spawnInterval = 2f;       // Интервал спавна
-    public List<Transform> spawnPoints;    // Список точек спавна (задаётся в инспекторе)
+    [SerializeField] private EnemyPool enemyPool;
+    [SerializeField] private float spawnInterval = 2f;
+    [SerializeField] private List<Transform> spawnPoints;
 
-    void Start()
+    private void Start()
     {
-        // Запускаем повторяющийся спавн
-        InvokeRepeating(nameof(SpawnEnemy), 0f, spawnInterval);
+        StartCoroutine(SpawnRoutine());
     }
 
-    void SpawnEnemy()
+    private IEnumerator SpawnRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(spawnInterval);
+            SpawnEnemy();
+        }
+    }
+
+    private void SpawnEnemy()
     {
         if (spawnPoints.Count == 0)
         {
-            Debug.LogWarning("Нет точек спавна!");
+            Debug.LogWarning("No spawn points assigned!");
             return;
         }
 
-        // Выбираем случайную точку
         Transform selectedPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
 
-        // Получаем направление (например, вперёд от точки)
-        Vector3 direction = selectedPoint.forward;
+        GameObject enemyObj = enemyPool.GetEnemy();
+        enemyObj.transform.position = selectedPoint.position;
+        enemyObj.transform.rotation = selectedPoint.rotation;
+        enemyObj.SetActive(true);
 
-        // Создаём врага через пул
-        GameObject enemyObj = enemyPool.GetEnemy(selectedPoint.position, selectedPoint.rotation);
-
-        // Инициализируем врага (передаём направление и ссылку на пул)
-        Enemy enemy = enemyObj.GetComponent<Enemy>();
-        if (enemy != null)
+        if (enemyObj.TryGetComponent(out Enemy enemy))
         {
-            enemy.Initialize(direction, enemyPool);
+            enemy.Initialize(selectedPoint.forward, enemyPool);
+        }
+        else
+        {
+            Debug.LogError("Enemy prefab does not have Enemy component!", enemyObj);
         }
     }
 }

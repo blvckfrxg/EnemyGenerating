@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class EnemyPool : MonoBehaviour
 {
-    public GameObject enemyPrefab;
-    public int poolSize = 10;
+    [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private int poolSize = 10;
 
     private Queue<GameObject> pool = new Queue<GameObject>();
 
-    void Start()
+    private void Start()
     {
         for (int i = 0; i < poolSize; i++)
         {
@@ -18,21 +18,16 @@ public class EnemyPool : MonoBehaviour
         }
     }
 
-    public GameObject GetEnemy(Vector3 position, Quaternion rotation)
+    public GameObject GetEnemy()
     {
         if (pool.Count == 0)
         {
-            // Расширяем пул при необходимости
             GameObject newEnemy = Instantiate(enemyPrefab);
             newEnemy.SetActive(false);
             pool.Enqueue(newEnemy);
         }
 
-        GameObject enemy = pool.Dequeue();
-        enemy.transform.position = position;
-        enemy.transform.rotation = rotation;
-        enemy.SetActive(true);
-        return enemy;
+        return pool.Dequeue();
     }
 
     public void ReturnEnemy(GameObject enemy)
